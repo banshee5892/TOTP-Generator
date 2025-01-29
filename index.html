@@ -1,0 +1,91 @@
+<!-- static/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOTP Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-md mx-auto bg-white rounded-xl shadow-md p-6">
+            <h1 class="text-2xl font-bold mb-6">TOTP Generator</h1>
+            <form id="totpForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium">Secret Key (required)</label>
+                    <input type="text" name="secret" required
+                           class="mt-1 block w-full rounded-md border border-gray-300 p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Number of Digits</label>
+                    <input type="number" name="digits" value="6"
+                           class="mt-1 block w-full rounded-md border border-gray-300 p-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Time Interval (seconds)</label>
+                    <input type="number" name="interval" value="30"
+                           class="mt-1 block w-full rounded-md border border-gray-300 p-2">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" name="debug" id="debug"
+                           class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                    <label for="debug" class="ml-2 block text-sm font-medium">
+                        Enable Debug Output
+                    </label>
+                </div>
+                <button type="submit"
+                        class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">
+                    Generate TOTP
+                </button>
+            </form>
+            <div id="result" class="mt-4 p-4 hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('totpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const resultDiv = document.getElementById('result');
+            
+            const data = {
+                secret: form.secret.value,
+                digits: parseInt(form.digits.value),
+                interval: parseInt(form.interval.value),
+                debug: form.debug.checked
+            };
+
+            try {
+                const response = await fetch('/api/totp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                resultDiv.className = 'mt-4 p-4 border rounded';
+                resultDiv.classList.add(response.ok ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500');
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <pre class="whitespace-pre-wrap">${result.output}</pre>
+                        ${result.error ? `<pre class="text-red-500 mt-2">${result.error}</pre>` : ''}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-500">${result.error}</div>`;
+                }
+                
+                resultDiv.classList.remove('hidden');
+            } catch (error) {
+                resultDiv.className = 'mt-4 p-4 bg-red-50 border border-red-500 rounded';
+                resultDiv.innerHTML = `<div class="text-red-500">Error: ${error.message}</div>`;
+                resultDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
