@@ -16,7 +16,6 @@ Access: http://localhost:5000
 
 Features:
 
-Secure command execution
 Error handling
 Cross-origin protection
 Responsive UI
