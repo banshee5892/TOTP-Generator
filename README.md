@@ -14,9 +14,4 @@ Save Guiapp.py
 Run: python Guiapp.py
 Access: http://localhost:5000
 
-Features:
 
-Error handling
-Cross-origin protection
-Responsive UI
-Real-time feedback
