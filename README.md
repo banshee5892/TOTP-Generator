@@ -1,5 +1,5 @@
 # TOTP-Generator
-This code implements a Time-Based One-Time Password (TOTP) generator, which is a type of two-factor authentication system.
+This solution implements a Time-Based One-Time Password (TOTP) generator based on RFC 6238 to use with two-factor authentication system.
 
 Requirements:
 
