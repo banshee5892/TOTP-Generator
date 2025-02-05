@@ -6,6 +6,8 @@
 #include <sstream>
 #include <cmath>
 #include <cstring>
+#include <fstream>
+#include <windows.h>
 
 class SHA1 {
 private:
@@ -247,6 +249,66 @@ int main(int argc, char* argv[]) {
         }
         else if (arg == "--debug") {
             debug = true;
+        }
+        else if (arg == "--install") {
+            std::ifstream ini("config.ini");
+            if (!ini.is_open()) {
+                std::cout << "Error: config.ini not found\n";
+                return 1;
+            }
+
+            std::string name, publisher, version;
+            std::string line;
+            while (std::getline(ini, line)) {
+                if (line.find("Name=") == 0) name = line.substr(5);
+                if (line.find("Publisher=") == 0) publisher = line.substr(10);
+                if (line.find("Version=") == 0) version = line.substr(8);
+            }
+            ini.close();
+
+            char path[MAX_PATH];
+            GetModuleFileNameA(NULL, path, MAX_PATH);
+
+            HKEY hKey;
+            std::string regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\" + name;
+            RegCreateKeyExA(HKEY_LOCAL_MACHINE, regPath.c_str(), 0, NULL,
+                REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL);
+
+            RegSetValueExA(hKey, "DisplayName", 0, REG_SZ,
+                (BYTE*)name.c_str(), name.length() + 1);
+            RegSetValueExA(hKey, "Publisher", 0, REG_SZ,
+                (BYTE*)publisher.c_str(), publisher.length() + 1);
+            RegSetValueExA(hKey, "DisplayVersion", 0, REG_SZ,
+                (BYTE*)version.c_str(), version.length() + 1);
+            RegSetValueExA(hKey, "InstallLocation", 0, REG_SZ,
+                (BYTE*)path, strlen(path) + 1);
+            RegSetValueExA(hKey, "UninstallString", 0, REG_SZ,
+                (BYTE*)("\"" + std::string(path) + "\" --uninstall").c_str(),
+                strlen(path) + 13);
+
+            RegCloseKey(hKey);
+            std::cout << "Installation completed\n";
+            return 0;
+        }
+        else if (arg == "--uninstall") {
+            char path[MAX_PATH];
+            GetModuleFileNameA(NULL, path, MAX_PATH);
+
+            std::ifstream ini("config.ini");
+            std::string name;
+            std::string line;
+            while (std::getline(ini, line)) {
+                if (line.find("Name=") == 0) {
+                    name = line.substr(5);
+                    break;
+                }
+            }
+            ini.close();
+
+            std::string regPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\" + name;
+            RegDeleteKeyA(HKEY_LOCAL_MACHINE, regPath.c_str());
+            std::cout << "Uninstallation completed\n";
+            return 0;
         }
         else if (arg == "--help") {
             printUsage(argv[0]);
