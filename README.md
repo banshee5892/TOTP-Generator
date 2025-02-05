@@ -6,6 +6,7 @@ Requirements:
 Python 3.x
 Flask (pip install flask)
 TOTP.exe in the same directory as Guiapp.py
+TOTP.exe is in the same directory as config.ini
 
 Setup:
 
@@ -14,4 +15,8 @@ Save Guiapp.py
 Run: python Guiapp.py
 Access: http://localhost:5000
 
+Installation:
+ 
+Install: CMD.exe (elevated) -> TOTP.exe --install
+Uninstall: CMD.exe (elevated) -> TOTP.exe --uninstall
 
